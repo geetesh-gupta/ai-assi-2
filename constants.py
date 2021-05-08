@@ -5,7 +5,7 @@ class GRID_ELEM:
 
 
 class GRID:
-    MARGIN = 1
+    MARGIN = 0
     COL = 10
     ROW = 10
 

@@ -8,15 +8,16 @@ class BaseColors:
     YELLOW = (255, 255, 0)
     ORANGE = (255, 120, 0)
     YELLOW_GREEN = (154, 205, 50)
-    DARK_RED = (139, 0, 0)
+    DARK_RED = (120, 40, 31)
+    LIGHT_RED = (251, 238, 230)
     SEA_GREEN = (32, 178, 170)
     SEA_GREEN = (32, 178, 170)
     GREY = (47, 79, 79)
 
 
 class CustomColors:
-    BASE = BaseColors.BLACK
-    GRID = BaseColors.GREY
+    BASE = BaseColors.LIGHT_RED
+    GRID = BaseColors.LIGHT_RED
     WALL = BaseColors.DARK_RED
     JUMP = BaseColors.YELLOW_GREEN
     GOAL = BaseColors.RED
