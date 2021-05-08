@@ -94,43 +94,35 @@ def drawGridItem(pos, color, screen):
 
 
 def drawGameLayoutMatrix(gameLayoutMatrix, screen):
-    powerImg = loadAndScaleImage('lighting.png')
-    restartImg = loadAndScaleImage('banner.png')
-    agentImg = loadAndScaleImage('athlete.png')
-    jumpImg = loadAndScaleImage('portal.png')
-
     for rowIndex, row in enumerate(gameLayoutMatrix):
         for colIndex, val in enumerate(row):
-            if val == '#':
-                color = CustomColors.WALL
-            else:
-                color = CustomColors.GRID
-            drawGridItem((rowIndex, colIndex), color, screen)
-            if val == 'S':
-                drawImage(agentImg, (rowIndex, colIndex), screen)
-            elif val == 'J':
-                drawImage(jumpImg, (rowIndex, colIndex), screen)
-            elif val == 'R':
-                drawImage(restartImg, (rowIndex, colIndex), screen)
-            elif val == 'P':
-                drawImage(powerImg, (rowIndex, colIndex), screen)
+            drawGameElement(val, (rowIndex, colIndex), screen)
 
 
 def drawGameElements(gameElemsPos, screen):
+    for val, posList in gameElemsPos.items():
+        for pos in posList:
+            drawGameElement(val, pos, screen)
+
+
+def drawGameElement(elem, pos, screen):
+    if elem == '#':
+        drawGridItem(pos, CustomColors.WALL, screen)
+    else:
+        drawGridItem(pos, CustomColors.GRID, screen)
+
     powerImg = loadAndScaleImage('lighting.png')
     restartImg = loadAndScaleImage('banner.png')
     agentImg = loadAndScaleImage('athlete.png')
     jumpImg = loadAndScaleImage('portal.png')
     goalImg = loadAndScaleImage('flag.png')
-    for val, posList in gameElemsPos.items():
-        for pos in posList:
-            if val == 'S':
-                drawImage(agentImg, pos, screen)
-            elif val == 'J':
-                drawImage(jumpImg, pos, screen)
-            elif val == 'R':
-                drawImage(restartImg, pos, screen)
-            elif val == 'P':
-                drawImage(powerImg, pos, screen)
-            elif val == 'G':
-                drawImage(goalImg, pos, screen)
+    if elem == 'J':
+        drawImage(jumpImg, pos, screen)
+    elif elem == 'R':
+        drawImage(restartImg, pos, screen)
+    elif elem == 'P':
+        drawImage(powerImg, pos, screen)
+    elif elem == 'G':
+        drawImage(goalImg, pos, screen)
+    # elif elem == 'S':
+    #     drawImage(agentImg, pos, screen)

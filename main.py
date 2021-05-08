@@ -19,7 +19,10 @@ done = False
 clock = pygame.time.Clock()
 
 # Get game layout and goal position
-game = Game()
+game = Game(screen)
+
+screen.fill(CustomColors.BASE)
+game.draw()
 
 while not done:
     for event in pygame.event.get():
@@ -31,11 +34,18 @@ while not done:
             row = pos[1] // (GRID_ELEM.HEIGHT + GRID.MARGIN)
 
             print("Click ", pos, "Grid coordinates: ", row, column)
-
-    # Set the screen background
-    screen.fill(CustomColors.BASE)
-    game.draw(screen)
-
+        elif event.type == pygame.KEYUP:
+            y, x = game.getAgent().getPos()
+            vel = 1
+            if event.key == pygame.K_LEFT and x > 0:
+                game.moveAgent((y, x - vel))
+            if event.key == pygame.K_RIGHT and x < GRID.COL:
+                game.moveAgent((y, x + vel))
+            if event.key == pygame.K_UP and y > 0:
+                game.moveAgent((y - vel, x))
+            if event.key == pygame.K_DOWN and y < GRID.ROW:
+                game.moveAgent((y + vel, x))
+                
     # Limit to 60 frames per second
     clock.tick(60)
 
