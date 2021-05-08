@@ -1,0 +1,15 @@
+
+class GRID_ELEM:
+    WIDTH = 80
+    HEIGHT = 80
+
+
+class GRID:
+    MARGIN = 1
+    COL = 10
+    ROW = 10
+
+
+class WINDOW:
+    WIDTH = GRID_ELEM.WIDTH * GRID.COL + GRID.MARGIN * (GRID.COL - 2)
+    HEIGHT = GRID_ELEM.HEIGHT * (GRID.ROW + 2) + GRID.MARGIN * (GRID.ROW - 2)
