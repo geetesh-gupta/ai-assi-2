@@ -25,8 +25,10 @@ game = Game()
 screen.fill(CustomColors.BASE)
 game.draw(screen)
 qValues = []
-MOVEEVENT, t = pygame.USEREVENT + 1, 100
+MOVEEVENT, t = pygame.event.custom_type(), 100
+RESETEVENT = pygame.event.custom_type()
 pygame.time.set_timer(MOVEEVENT, t)
+iteration = 0
 while not done:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -52,13 +54,22 @@ while not done:
             game.updateAgent()
             game.reDrawAgent(screen)
             game.agent.displayQValues()
-            qValues.append(game.remap_keys(game.agent.qValueFunc))
+        elif event.type == RESETEVENT:
+            game.draw(screen)
+
+            # qValues.append(game.remap_keys(game.agent.qValueFunc))
 
     if game.isWinPos(game.agent.getState()):
-        done = True
-        with open('qValues.json', 'w') as f:
-            json.dump(qValues, f)
-        game.agent.displayQValues()
+        # done = True
+        if iteration == 10:
+            done = True
+        else:
+            iteration += 1
+            game.resetState()
+            pygame.event.post(pygame.event.Event(RESETEVENT))
+        # with open('qValues.json', 'w') as f:
+        #     json.dump(qValues, f)
+        # game.agent.displayQValues()
 
     # Limit to 60 frames per second
     clock.tick(60)

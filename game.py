@@ -58,6 +58,9 @@ class Game:
             return -10
         return 0
 
+    def resetState(self):
+        self.agent.setState(self.gameElemsPos[GameElements.AGENT][0])
+
     def updateAgent(self):
         state = self.agent.getState()
         action = self.agent.getAction(state)
@@ -97,9 +100,9 @@ class Game:
             newState = (y, x - 1)
         elif action == Directions.RIGHT and x < GRID.COL:
             newState = (y, x + 1)
-        elif action == Directions.UP and x > 0:
+        elif action == Directions.UP and y > 0:
             newState = (y - 1, x)
-        elif action == Directions.LEFT and x < GRID.ROW:
+        elif action == Directions.DOWN and y < GRID.ROW:
             newState = (y + 1, x)
         if self.isValidPos(newState):
             if self.isJumpPos(state):
@@ -111,21 +114,9 @@ class Game:
 
     def reDrawAgent(self, screen):
         prevState = self.agent.prevState
-        # curState = self.agent.getState()
         drawGameElement(self.layoutMatrix[prevState[0]]
                         [prevState[1]], prevState, screen)
         self.agent.draw(screen)
-        # display.flip()
-
-        # if self.isJumpPos(curState):
-        #     curState = self.gameElemsPos[GameElements.POWER][0]
-        #     drawGameElement(self.layoutMatrix[prevState[0]]
-        #                     [prevState[1]], prevState, screen)
-        #     self.agent.draw(screen)
-        # elif self.isRestartPos(curState):
-        #     drawGameElement(self.layoutMatrix[prevState[0]]
-        #                     [prevState[1]], prevState, screen)
-        #     self.agent.draw(screen)
 
     def getAgent(self):
         return self.agent
