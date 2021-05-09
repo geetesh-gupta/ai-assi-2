@@ -113,7 +113,7 @@ def drawGameElement(elem, pos, screen):
 
     powerImg = loadAndScaleImage('lighting.png')
     restartImg = loadAndScaleImage('banner.png')
-    agentImg = loadAndScaleImage('athlete.png')
+    # agentImg = loadAndScaleImage('athlete.png')
     jumpImg = loadAndScaleImage('portal.png')
     goalImg = loadAndScaleImage('flag.png')
     if elem == 'J':

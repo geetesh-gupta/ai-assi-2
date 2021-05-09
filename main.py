@@ -2,6 +2,7 @@ import pygame
 from colors import CustomColors
 from constants import GRID_ELEM, GRID, WINDOW
 from game import Game
+import json
 
 # Initialize pygame
 pygame.init()
@@ -19,11 +20,13 @@ done = False
 clock = pygame.time.Clock()
 
 # Get game layout and goal position
-game = Game(screen)
+game = Game()
 
 screen.fill(CustomColors.BASE)
-game.draw()
-
+game.draw(screen)
+qValues = []
+MOVEEVENT, t = pygame.USEREVENT + 1, 100
+pygame.time.set_timer(MOVEEVENT, t)
 while not done:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -35,17 +38,28 @@ while not done:
 
             print("Click ", pos, "Grid coordinates: ", row, column)
         elif event.type == pygame.KEYUP:
-            y, x = game.getAgent().getPos()
-            vel = 1
-            if event.key == pygame.K_LEFT and x > 0:
-                game.moveAgent((y, x - vel))
-            if event.key == pygame.K_RIGHT and x < GRID.COL:
-                game.moveAgent((y, x + vel))
-            if event.key == pygame.K_UP and y > 0:
-                game.moveAgent((y - vel, x))
-            if event.key == pygame.K_DOWN and y < GRID.ROW:
-                game.moveAgent((y + vel, x))
-                
+            y, x = game.getAgent().getState()
+            # vel = 1
+            # if event.key == pygame.K_LEFT and x > 0:
+            #     game.moveAgent((y, x - vel))
+            # if event.key == pygame.K_RIGHT and x < GRID.COL:
+            #     game.moveAgent((y, x + vel))
+            # if event.key == pygame.K_UP and y > 0:
+            #     game.moveAgent((y - vel, x))
+            # if event.key == pygame.K_DOWN and y < GRID.ROW:
+            #     game.moveAgent((y + vel, x))
+        elif event.type == MOVEEVENT:
+            game.updateAgent()
+            game.reDrawAgent(screen)
+            game.agent.displayQValues()
+            qValues.append(game.remap_keys(game.agent.qValueFunc))
+
+    if game.isWinPos(game.agent.getState()):
+        done = True
+        with open('qValues.json', 'w') as f:
+            json.dump(qValues, f)
+        game.agent.displayQValues()
+
     # Limit to 60 frames per second
     clock.tick(60)
 

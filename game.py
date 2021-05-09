@@ -1,39 +1,36 @@
-from gameUtils import getGame, drawGameLayoutMatrix, drawGameElements, loadAndScaleImage, GameElements, drawGridItem, drawImage, drawGameElement
-from colors import CustomColors
+from gameUtils import getGame, drawGameLayoutMatrix, GameElements, drawGameElement
 from pygame import display
+from qAgent import QAgent
+# from agent import Agent
+import random
+from constants import GRID
 
 
-class Agent:
-    def __init__(self, pos):
-        self.pos = pos
-        self.image = loadAndScaleImage('athlete.png')
-
-    def draw(self, screen):
-        drawImage(self.image, self.pos, screen)
-        # drawGameElement(GameElements.AGENT, self.pos, screen)
-
-    def move(self, pos):
-        self.pos = pos
-
-    def getPos(self):
-        return self.pos
+class Directions:
+    UP = 'Up'
+    DOWN = 'Down'
+    LEFT = 'Left'
+    RIGHT = 'Right'
 
 
 class Game:
-    def __init__(self, screen):
+    def __init__(self, noise=0.2):
         game = getGame()
         self.layoutMatrix = game[0]
         self.gameElemsPos = game[1]
-        self.agent = Agent(self.gameElemsPos[GameElements.AGENT][0])
-        self.screen = screen
+        self.agent = QAgent(
+            self.gameElemsPos[GameElements.AGENT][0], self.actionFn, self.rewardFn)
+        self.noise = noise
 
-    def draw(self):
-        drawGameLayoutMatrix(self.layoutMatrix, self.screen)
-        # drawGameElements(self.gameElemsPos, self.screen)
-        self.agent.draw(self.screen)
+    def draw(self, screen):
+        drawGameLayoutMatrix(self.layoutMatrix, screen)
+        self.agent.draw(screen)
 
     def isValidPos(self, pos):
         return self.layoutMatrix[pos[0]][pos[1]] != '#'
+
+    def isWinPos(self, pos):
+        return self.layoutMatrix[pos[0]][pos[1]] == 'G'
 
     def isJumpPos(self, pos):
         return pos in self.gameElemsPos[GameElements.JUMP]
@@ -41,29 +38,94 @@ class Game:
     def isRestartPos(self, pos):
         return pos in self.gameElemsPos[GameElements.RESTART]
 
-    def moveAgent(self, newPos):
-        if self.isValidPos(newPos):
-            oldPos = self.agent.getPos()
-            drawGameElement(self.layoutMatrix[oldPos[0]]
-                            [oldPos[1]], oldPos, self.screen)
-            self.agent.move(newPos)
-            self.agent.draw(self.screen)
-            display.flip()
+    def actionFn(self, state):
+        if self.isWinPos(state):
+            return 'EXIT'
+        else:
+            return [Directions.UP, Directions.DOWN, Directions.LEFT, Directions.RIGHT]
 
-            if self.isJumpPos(newPos):
-                oldPos = newPos
-                newPos = self.gameElemsPos[GameElements.POWER][0]
-                drawGameElement(self.layoutMatrix[oldPos[0]]
-                                [oldPos[1]], oldPos, self.screen)
-                self.agent.move(newPos)
-                self.agent.draw(self.screen)
-            elif self.isRestartPos(newPos):
-                oldPos = newPos
-                newPos = self.gameElemsPos[GameElements.AGENT][0]
-                drawGameElement(self.layoutMatrix[oldPos[0]]
-                                [oldPos[1]], oldPos, self.screen)
-                self.agent.move(newPos)
-                self.agent.draw(self.screen)
+    def rewardFn(self, state):
+        elem = self.layoutMatrix[state[0]][state[1]]
+        if elem == 'G':
+            return 200
+        elif elem == 'R':
+            return -5
+        elif elem == 'J':
+            return 1
+        elif elem == 'P':
+            return 5
+        elif elem == '.':
+            return -10
+        return 0
+
+    def updateAgent(self):
+        state = self.agent.getState()
+        action = self.agent.getAction(state)
+        # TODO
+        if random.random() < self.noise:
+            validActions = self.agent.getValidActions(state)
+            noisyAction = random.choice(validActions)
+            # while noisyAction == action:
+            #     noisyAction = random.choice(validActions)
+            action = noisyAction
+        self.agent.takeAction(state, action)
+        newState = self.transtionFn(state, action)
+        self.agent.update(state, action, newState,
+                          self.agent.rewardFn(newState))
+        # TODO: Rethink agents reward function knowledge
+
+    def update(self, screen):
+        qValues = []
+        while not self.isWinPos(self.agent.getState()):
+            self.updateAgent()
+            self.reDrawAgent(screen)
+            display.flip()
+            qValues.append(self.remap_keys(self.agent.qValueFunc))
+            # print(self.agent.qValueFunc)
+        with open('qValues.json', 'w') as f:
+            import json
+            json.dump(qValues, f)
+
+    def remap_keys(self, mapping):
+        return [{'key': k, 'value': v} for k, v in mapping.items()]
+
+    def transtionFn(self, state, action):
+        y, x = state
+        # TODO: Add exit condition
+        newState = state
+        if action == Directions.LEFT and x > 0:
+            newState = (y, x - 1)
+        elif action == Directions.RIGHT and x < GRID.COL:
+            newState = (y, x + 1)
+        elif action == Directions.UP and x > 0:
+            newState = (y - 1, x)
+        elif action == Directions.LEFT and x < GRID.ROW:
+            newState = (y + 1, x)
+        if self.isValidPos(newState):
+            if self.isJumpPos(state):
+                newState = self.gameElemsPos[GameElements.POWER][0]
+            elif self.isRestartPos(state):
+                newState = self.gameElemsPos[GameElements.AGENT][0]
+            return newState
+        return state
+
+    def reDrawAgent(self, screen):
+        prevState = self.agent.prevState
+        # curState = self.agent.getState()
+        drawGameElement(self.layoutMatrix[prevState[0]]
+                        [prevState[1]], prevState, screen)
+        self.agent.draw(screen)
+        # display.flip()
+
+        # if self.isJumpPos(curState):
+        #     curState = self.gameElemsPos[GameElements.POWER][0]
+        #     drawGameElement(self.layoutMatrix[prevState[0]]
+        #                     [prevState[1]], prevState, screen)
+        #     self.agent.draw(screen)
+        # elif self.isRestartPos(curState):
+        #     drawGameElement(self.layoutMatrix[prevState[0]]
+        #                     [prevState[1]], prevState, screen)
+        #     self.agent.draw(screen)
 
     def getAgent(self):
         return self.agent
