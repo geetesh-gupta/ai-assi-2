@@ -38,31 +38,20 @@ while not done:
             row = pos[1] // (GRID_ELEM.HEIGHT + GRID.MARGIN)
 
             print("Click ", pos, "Grid coordinates: ", row, column)
-        elif event.type == pygame.KEYUP:
-            y, x = game.getAgent().getState()
-            # vel = 1
-            # if event.key == pygame.K_LEFT and x > 0:
-            #     game.moveAgent((y, x - vel))
-            # if event.key == pygame.K_RIGHT and x < GRID.COL:
-            #     game.moveAgent((y, x + vel))
-            # if event.key == pygame.K_UP and y > 0:
-            #     game.moveAgent((y - vel, x))
-            # if event.key == pygame.K_DOWN and y < GRID.ROW:
-            #     game.moveAgent((y + vel, x))
         elif event.type == MOVEEVENT:
-            game.updateAgent()
-            game.reDrawAgent(screen)
+            game.updateAgent(screen)
+            # game.reDrawAgent(screen)
             game.agent.displayQValues()
         elif event.type == RESETEVENT:
+            game.resetState()
             game.draw(screen)
-
             # qValues.append(game.remap_keys(game.agent.qValueFunc))
     if game.isGameFinished():
         if iteration == 10:
             done = True
         else:
             iteration += 1
-            game.resetState()
+            # game.resetState()
             pygame.event.post(pygame.event.Event(RESETEVENT))
 
     # Limit to 60 frames per second
