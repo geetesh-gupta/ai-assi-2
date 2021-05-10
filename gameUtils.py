@@ -14,7 +14,7 @@ class GameElements:
 
 def getLayoutMatrix():
     layoutMatrix = []
-    with open('layouts/small.gg') as f:
+    with open('layouts/main.gg') as f:
         for line in f:
             layoutMatrix.append(line.strip())
     return layoutMatrix
@@ -80,11 +80,15 @@ def loadAndScaleImage(imagePath):
 
 
 def drawImage(image, imagePos, screen):
+    if imagePos is None:
+        return
     screen.blit(image, ((GRID.MARGIN + GRID_ELEM.WIDTH) * imagePos[1] + GRID.MARGIN,
                         (GRID.MARGIN + GRID_ELEM.HEIGHT) * imagePos[0] + GRID.MARGIN))
 
 
 def drawGridItem(pos, color, screen):
+    if pos is None:
+        return
     pygame.draw.rect(screen,
                      color,
                      [(GRID.MARGIN + GRID_ELEM.WIDTH) * pos[1] + GRID.MARGIN,

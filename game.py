@@ -36,7 +36,7 @@ class Game:
         return self.getLayoutElem(pos) == 'G'
 
     def isExitPos(self, pos):
-        return self.getLayoutElem(pos) == 'G' or self.getLayoutElem(pos) == 'P'
+        return self.getLayoutElem(pos) == 'G'
 
     def isJumpPos(self, pos):
         return pos in self.gameElemsPos[GameElements.JUMP]
@@ -55,6 +55,8 @@ class Game:
             return ['EXIT']
         if elem == '#':
             return []
+        if elem == 'J':
+            return ['JUMP']
 
         return [Directions.UP, Directions.DOWN, Directions.LEFT, Directions.RIGHT]
 
@@ -63,15 +65,15 @@ class Game:
         prevElem = self.getLayoutElem(state)
 
         if prevElem == 'G' and action == 'EXIT':
-            return 1
+            return 100
         elif elem == 'R':
-            return -1
+            return -10
         elif elem == 'J':
-            return 5
-        elif prevElem == 'P' and action == 'EXIT':
+            return 10
+        # elif elem == 'P':
+        #     return 0
+        elif elem == '.' or elem == 'S' or elem == 'P':
             return -1
-        elif elem == '.' or elem == 'S':
-            return -0.1
         return 0
 
     def transtionFn(self, state, action):

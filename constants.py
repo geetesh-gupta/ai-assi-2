@@ -6,8 +6,8 @@ class GRID_ELEM:
 
 class GRID:
     MARGIN = 0
-    COL = 6
-    ROW = 5
+    COL = 10
+    ROW = 10
 
 
 class WINDOW:

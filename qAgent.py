@@ -47,6 +47,8 @@ class QAgent():
             # return self.computeActionFromQValues(state)
 
     def getQValue(self, state, action):
+        if state is None:
+            return 0.0
         try:
             return self.qValueFunc[(state, action)]
         except KeyError:
@@ -205,45 +207,50 @@ class QAgent():
 
     def displayQValues(self):
         states, actions = zip(*self.qValueFunc.keys())
-        rows, cols = zip(*states)
-        rows = set(rows)
-        cols = set(cols)
-
+        try:
+            rows, cols = zip(*states)
+            rows = set(rows)
+            cols = set(cols)
+        except Exception:
+            return
         print('----------------------------------------------')
         print("Q Values")
-        print('%8s' % (' '), end=' ')
+        print('%6s' % (' '), end=' ')
 
         for action in self.getValidActions((1, 1)):
-            print('%8s' % (action), end=' ')
-        print('%8s' % ('EXIT'), end=' ')
+            print('%12s' % (action), end=' ')
+        print('%12s' % ('EXIT'), end=' ')
+        print('%12s' % ('JUMP'), end=' ')
         print()
 
         for row in rows:
             for col in cols:
-                print('%3d,%3d' % (row, col), end=' ')
+                print('%2d, %2d' % (row, col), end=' ')
                 for action in self.getValidActions((row, col)):
                     if action == 'EXIT':
-                        print('%40s' % (self.getQValue((row, col), action)), end=' ')
+                        print('%64.4f' % (self.getQValue((row, col), action)), end=' ')
+                    elif action == 'JUMP':
+                        print('%76.4f' % (self.getQValue((row, col), action)), end=' ')
                     else:
-                        print('%8.4f' % (self.getQValue((row, col), action)), end=' ')
+                        print('%12.4f' % (self.getQValue((row, col), action)), end=' ')
                 print()
 
         print('----------------------------------------------')
-        print('%8s' % (' '), end=' ')
+        print('%3s' % (' '), end=' ')
 
         for col in cols:
-            print('%8d' % (col), end=' ')
+            print('%12d' % (col), end=' ')
         print()
         print("Value Function")
         for row in rows:
-            print('%8d' % (row), end=' ')
+            print('%3d' % (row), end=' ')
             for col in cols:
-                print('%8.4f' % (self.getValue((row, col))), end=' ')
+                print('%12.4f' % (self.getValue((row, col))), end=' ')
             print()
 
         print("Policy")
         for row in rows:
-            print('%8d' % (row), end=' ')
+            print('%3d' % (row), end=' ')
             for col in cols:
-                print('%8s' % (self.getPolicy((row, col))), end=' ')
+                print('%12s' % (self.getPolicy((row, col))), end=' ')
             print()
