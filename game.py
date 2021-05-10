@@ -2,6 +2,7 @@ from gameUtils import getGame, drawGameLayoutMatrix, GameElements, drawGameEleme
 from qAgent import QAgent
 import random
 from constants import GRID
+import time
 
 
 class Directions:
@@ -23,6 +24,9 @@ class Game:
     def draw(self, screen):
         drawGameLayoutMatrix(self.layoutMatrix, screen)
         self.agent.draw(screen)
+
+    def setAgentToTest(self):
+        self.agent.setPrevState
 
     def getLayoutElem(self, pos):
         if pos is None:
@@ -65,11 +69,11 @@ class Game:
         prevElem = self.getLayoutElem(state)
 
         if prevElem == 'G' and action == 'EXIT':
-            return 100
+            return 300
         elif elem == 'R':
             return -10
         elif elem == 'J':
-            return 10
+            return 50
         # elif elem == 'P':
         #     return 0
         elif elem == '.' or elem == 'S' or elem == 'P':
@@ -100,7 +104,41 @@ class Game:
             return newState
         return state
 
-    def updateAgent(self, screen):
+    def trainAgent(self, numIterations):
+        curIteration = 0
+        totalRewardSoFar = 0.0
+        epochSize = 100
+
+        while curIteration < numIterations + 1:
+
+            if curIteration % epochSize == 0:
+                if curIteration == 0:
+                    print("Begin training...")
+                else:
+                    print("Completed %d training epochs with average score %f" %
+                          (curIteration, totalRewardSoFar / epochSize))
+                totalRewardSoFar = 0.0
+            if curIteration == numIterations:
+                break
+            while not self.isGameFinished():
+                self.updateAgent()
+            totalRewardSoFar += self.agent.getTotalReward()
+            # print("Score in current iteration: %f" % self.agent.getTotalReward())
+            self.resetState()
+            time.sleep(1 / 10000)
+
+            curIteration += 1
+
+    def testAgent(self, numTests, screen):
+        for t in range(numTests):
+            while not self.isGameFinished():
+                self.updateAndRedrawAgent(screen)
+                time.sleep(1 / 60)
+            self.resetState()
+            print("Average Score: %f" % self.agent.getTotalReward())
+            time.sleep(40 / 60)
+
+    def updateAgent(self):
         state = self.agent.getState()
         action = self.agent.getAction(state)
         if random.random() < self.noise:
@@ -108,17 +146,16 @@ class Game:
             if len(validActions):
                 action = random.choice(validActions)
         newState = self.transtionFn(state, action)
-        # if action == 'EXIT':
-        #     reward = 0
-        # else:
         reward = self.rewardFn(state, action, newState)
-        # print(state, action, newState, reward)
         self.agent.update(state, action, newState, reward)
         if action == 'EXIT':
+            # self.resetState()
             self.gameFinished = True
-        else:
+
+    def updateAndRedrawAgent(self, screen):
+        self.updateAgent()
+        if not self.isGameFinished():
             self.reDrawAgent(screen)
-        # TODO: Rethink agents reward function knowledge
 
     def reDrawAgent(self, screen):
         prevState = self.agent.prevState
@@ -127,6 +164,7 @@ class Game:
 
     def resetState(self):
         self.agent.setState(self.gameElemsPos[GameElements.AGENT][0])
+        self.agent.totalReward = 0
         self.gameFinished = False
 
     def getAgent(self):

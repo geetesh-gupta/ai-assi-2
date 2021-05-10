@@ -5,7 +5,7 @@ from constants import GRID
 
 
 class QAgent():
-    def __init__(self, startState, actionFn=None, rewardFn=None, numTraining=100, epsilon=0.2, alpha=0.9, gamma=0.9):
+    def __init__(self, startState, actionFn=None, rewardFn=None, numTraining=100, epsilon=0.1, alpha=0.9, gamma=0.9):
         # State
         self.state = startState
         self.prevState = None
@@ -23,6 +23,7 @@ class QAgent():
         self.policy = {}
         self.valueFunc = {}
         self.qValueFunc = {}
+        self.totalReward = 0.0
 
         # self.rewardFn = rewardFn
         # self.episodesSoFar = 0
@@ -116,6 +117,7 @@ class QAgent():
         # else:
         newQValue = (1 - self.alpha) * curQValue + self.alpha * \
             (reward + self.discount * nextValue)
+        self.totalReward += reward
         self.setQValue(state, action, newQValue)
         self.setPrevState(state)
         self.setState(nextState)
@@ -131,6 +133,14 @@ class QAgent():
 
     def setPrevState(self, prevState):
         self.prevState = prevState
+
+    def setToTest(self):
+        self.epsilon = 0
+        self.alpha = 0
+        self.discount = 0
+
+    def getTotalReward(self):
+        return self.totalReward
 
     # def getDeltaReward(self, state):
     #     if self.prevState is not None:
@@ -214,8 +224,8 @@ class QAgent():
         except Exception:
             return
         print('----------------------------------------------')
-        print("Q Values")
-        print('%6s' % (' '), end=' ')
+        print("Q Value Function")
+        print('%6s' % ('State'), end=' ')
 
         for action in self.getValidActions((1, 1)):
             print('%12s' % (action), end=' ')
@@ -234,21 +244,23 @@ class QAgent():
                     else:
                         print('%12.4f' % (self.getQValue((row, col), action)), end=' ')
                 print()
-
         print('----------------------------------------------')
-        print('%3s' % (' '), end=' ')
-
+        print("Optimal Value Function")
+        print('%3s' % ('R\C'), end=' ')
         for col in cols:
             print('%12d' % (col), end=' ')
         print()
-        print("Value Function")
         for row in rows:
             print('%3d' % (row), end=' ')
             for col in cols:
                 print('%12.4f' % (self.getValue((row, col))), end=' ')
             print()
-
-        print("Policy")
+        print('----------------------------------------------')
+        print("Optimal Policy")
+        print('%3s' % ('R\C'), end=' ')
+        for col in cols:
+            print('%12d' % (col), end=' ')
+        print()
         for row in rows:
             print('%3d' % (row), end=' ')
             for col in cols:
