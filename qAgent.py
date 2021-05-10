@@ -5,15 +5,15 @@ from gameUtils import loadAndScaleImage, drawImage
 
 
 class QAgent():
-    def __init__(self, startState, actionFn=None, rewardFn=None, numTraining=100, epsilon=0.3, alpha=0.9, gamma=0.84):
+    def __init__(self, startState, actionFn=None, rewardFn=None, numTraining=100, epsilon=0.3, alpha=0.5, gamma=0.6):
         # S == pos
         self.state = startState
-        # # pi(s) -> A
-        # self.policy = {}
+        # pi(s) -> A
+        self.policy = {}
         # # R(s)
         # self.rewardFunc = {}
-        # # V(s)
-        # self.valueFunc = {}
+        # V(s)
+        self.valueFunc = {}
         # Q(s,a)
         self.qValueFunc = {}
 
@@ -48,6 +48,22 @@ class QAgent():
             self.qValueFunc[(state, action)] = 0.0
             return 0.0
 
+    def getPolicy(self, state):
+        # try:
+        #     return self.policy[state]
+        # except KeyError:
+        #     self.policy[state] = self.computeActionFromQValues(state)
+        #     return self.policy[state]
+        return self.computeActionFromQValues(state)
+
+    def getValue(self, state):
+        # try:
+        #     return self.valueFunc[state]
+        # except KeyError:
+        #     self.valueFunc[state] = self.computeValueFromQValues(state)
+        #     return self.valueFunc[state]
+        return self.computeValueFromQValues(state)
+
     def computeValueFromQValues(self, state):
         # if not self.getValidActions(state):
         #     return 0.0
@@ -74,18 +90,17 @@ class QAgent():
     def update(self, state, action, nextState, reward):
         curQValue = self.getQValue(state, action)
         nextValue = self.getValue(nextState)
+
         self.qValueFunc[(state, action)] = curQValue + self.alpha * \
             (reward + self.discount * nextValue - curQValue)
+
+        # self.valueFunc[state] = self.computeValueFromQValues(state)
+        # self.policy[state] = self.computeActionFromQValues(state)
+
         self.setState(nextState)
 
     def setState(self, nextState):
         self.state = nextState
-
-    def getPolicy(self, state):
-        return self.computeActionFromQValues(state)
-
-    def getValue(self, state):
-        return self.computeValueFromQValues(state)
 
     def takeAction(self, state, action):
         self.prevState = state
@@ -178,8 +193,16 @@ class QAgent():
             print('%5d' % (col), end=' ')
         print()
 
+        print("Value Function")
         for row in rows:
             print('%5d' % (row), end=' ')
             for col in cols:
                 print('%5.2f' % (self.getValue((row, col))), end=' ')
+            print()
+
+        print("Policy")
+        for row in rows:
+            print('%5d' % (row), end=' ')
+            for col in cols:
+                print('%5s' % (self.getPolicy((row, col))), end=' ')
             print()

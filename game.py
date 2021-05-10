@@ -1,7 +1,5 @@
 from gameUtils import getGame, drawGameLayoutMatrix, GameElements, drawGameElement
-from pygame import display
 from qAgent import QAgent
-# from agent import Agent
 import random
 from constants import GRID
 
@@ -21,16 +19,20 @@ class Game:
         self.agent = QAgent(
             self.gameElemsPos[GameElements.AGENT][0], self.actionFn, self.rewardFn)
         self.noise = noise
+        self.gameFinished = False
 
     def draw(self, screen):
         drawGameLayoutMatrix(self.layoutMatrix, screen)
         self.agent.draw(screen)
 
+    def getLayoutElem(self, pos):
+        return self.layoutMatrix[pos[0]][pos[1]]
+
     def isValidPos(self, pos):
-        return self.layoutMatrix[pos[0]][pos[1]] != '#'
+        return self.getLayoutElem(pos) != '#'
 
     def isWinPos(self, pos):
-        return self.layoutMatrix[pos[0]][pos[1]] == 'G'
+        return self.getLayoutElem(pos) == 'G'
 
     def isJumpPos(self, pos):
         return pos in self.gameElemsPos[GameElements.JUMP]
@@ -40,57 +42,47 @@ class Game:
 
     def actionFn(self, state):
         if self.isWinPos(state):
-            return 'EXIT'
+            return ['EXIT']
         else:
             return [Directions.UP, Directions.DOWN, Directions.LEFT, Directions.RIGHT]
 
     def rewardFn(self, state):
-        elem = self.layoutMatrix[state[0]][state[1]]
+        elem = self.getLayoutElem(state)
         if elem == 'G':
-            return 200
-        elif elem == 'R':
-            return -5
-        elif elem == 'J':
             return 1
-        elif elem == 'P':
+        elif elem == 'R':
+            return -1
+        elif elem == 'J':
             return 5
-        elif elem == '.':
-            return -10
+        elif elem == 'P':
+            return 10
+        elif elem == '.' or elem == 'S':
+            return 0
         return 0
 
     def resetState(self):
         self.agent.setState(self.gameElemsPos[GameElements.AGENT][0])
+        self.gameFinished = False
+
+    def isGameFinished(self):
+        return self.gameFinished
 
     def updateAgent(self):
         state = self.agent.getState()
         action = self.agent.getAction(state)
-        # TODO
         if random.random() < self.noise:
             validActions = self.agent.getValidActions(state)
-            noisyAction = random.choice(validActions)
-            # while noisyAction == action:
-            #     noisyAction = random.choice(validActions)
-            action = noisyAction
+            action = random.choice(validActions)
         self.agent.takeAction(state, action)
         newState = self.transtionFn(state, action)
-        self.agent.update(state, action, newState,
-                          self.agent.rewardFn(newState))
+        if action == 'EXIT':
+            reward = 0
+        else:
+            reward = self.agent.rewardFn(newState)
+        self.agent.update(state, action, newState, reward)
+        if action == 'EXIT':
+            self.gameFinished = True
         # TODO: Rethink agents reward function knowledge
-
-    def update(self, screen):
-        qValues = []
-        while not self.isWinPos(self.agent.getState()):
-            self.updateAgent()
-            self.reDrawAgent(screen)
-            display.flip()
-            qValues.append(self.remap_keys(self.agent.qValueFunc))
-            # print(self.agent.qValueFunc)
-        with open('qValues.json', 'w') as f:
-            import json
-            json.dump(qValues, f)
-
-    def remap_keys(self, mapping):
-        return [{'key': k, 'value': v} for k, v in mapping.items()]
 
     def transtionFn(self, state, action):
         y, x = state
@@ -114,8 +106,7 @@ class Game:
 
     def reDrawAgent(self, screen):
         prevState = self.agent.prevState
-        drawGameElement(self.layoutMatrix[prevState[0]]
-                        [prevState[1]], prevState, screen)
+        drawGameElement(self.getLayoutElem(prevState), prevState, screen)
         self.agent.draw(screen)
 
     def getAgent(self):

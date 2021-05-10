@@ -2,7 +2,6 @@ import pygame
 from colors import CustomColors
 from constants import GRID_ELEM, GRID, WINDOW
 from game import Game
-import json
 
 # Initialize pygame
 pygame.init()
@@ -58,18 +57,13 @@ while not done:
             game.draw(screen)
 
             # qValues.append(game.remap_keys(game.agent.qValueFunc))
-
-    if game.isWinPos(game.agent.getState()):
-        # done = True
+    if game.isGameFinished():
         if iteration == 10:
             done = True
         else:
             iteration += 1
             game.resetState()
             pygame.event.post(pygame.event.Event(RESETEVENT))
-        # with open('qValues.json', 'w') as f:
-        #     json.dump(qValues, f)
-        # game.agent.displayQValues()
 
     # Limit to 60 frames per second
     clock.tick(60)

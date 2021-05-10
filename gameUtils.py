@@ -14,7 +14,7 @@ class GameElements:
 
 def getLayoutMatrix():
     layoutMatrix = []
-    with open('layouts/main.gg') as f:
+    with open('layouts/small.gg') as f:
         for line in f:
             layoutMatrix.append(line.strip())
     return layoutMatrix
